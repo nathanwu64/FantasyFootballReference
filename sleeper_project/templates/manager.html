@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +19,9 @@
         </nav>
 
         <h1 class="jersey-15" id="username">{{ username }}</h1>
+        <div class="jersey-15" >Manager since: 2018</div>
+        <div class="jersey-15" >Total leagues: 12</div>
+        <div class="jersey-15"> Leagues won: 4</div>
         <h3 class="dividerTitle tagline">
           The Rafters /
           <small class="text-body-secondary">Flags fly forever.</small>
@@ -28,12 +32,12 @@
                     <div class="flag-inner-border flex-center round-top-corners">
                         <div class="flag flex-center round-top-corners">
                             <div class="leagueContainer">
-                                <div class="leagueName jersey-15">RED DRAGONS DYNASTY</div>
-                                <div class="championText parisienne">Champion</div>
+                                <div class="leagueName full-width jersey-15">RED DRAGONS DYNASTY</div>
+                                <div class="championText full-width parisienne">Champion</div>
                             </div>
                             <div class="yearContainer jersey-15">
                                 <div class="year">20</div>
-                                <i class="bi bi-trophy-fill"></i>
+                                <i class="bi bi-trophy-fill gold-trophy"></i>
                                 <div class="year">21</div>
                             </div>
                         </div>
@@ -46,16 +50,55 @@
                     <div class="flag-inner-border flex-center round-top-corners">
                         <div class="flag flex-center round-top-corners">
                             <div class="leagueContainer">
-                                <div class="leagueName jersey-15">MONEYBALL MANIA</div>
-                                <div class="championText parisienne">Champion</div>
+                                <div class="leagueName full-width jersey-15">MONEYBALL MANIA</div>
+                                <div class="championText full-width parisienne">Champion</div>
                             </div>
                             <div class="yearContainer jersey-15">
                                 <div class="year">20</div>
-                                <i class="bi bi-trophy-fill"></i>
+                                <i class="bi bi-trophy-fill gold-trophy"></i>
                                 <div class="year">23</div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+
+        <h3 class="dividerTitle tagline">
+          Consolation /
+          <small class="text-body-secondary">Best of the worst.</small>
+        </h3>
+        <div id="consolationsWonWrapper" class="row row-cols-1 row-cols-md-6 g-4">
+            <div class="col">
+                <div class="flag-outer-border flex-center round-top-corners">
+                    <div class="flag-inner-border flex-center round-top-corners">
+                        <div class="flag flex-center round-top-corners">
+                            <div class="leagueContainer">
+                                <div class="leagueName full-width jersey-15">RED DRAGONS DYNASTY</div>
+                                <div class="full-width jersey-15">Consolation Winner</div>
+                            </div>
+                            <div class="yearContainer jersey-15">
+                                <div class="year">20</div>
+                                <div class="year">21</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <h3 class="dividerTitle tagline">
+          The Bathroom /
+          <small class="text-body-secondary">Flies forever.</small>
+        </h3>
+        <div id="toiletsWonWrapper" class="row row-cols-1 row-cols-md-6 g-4">
+            <div class="col">
+                <div class="toilet-paper text-shadow flex-center">
+                    <div>Champions League</div>
+                    <div>Last Place</div>
+                    <div>2024</div>
                 </div>
             </div>
         </div>
@@ -99,6 +142,12 @@
         background: #FFFFE3;
         line-height: normal;
     }
+    .charcoal-gray {
+        background: #4A4A4A;
+    }
+    .royal-blue {
+        background: #1C39BB;
+    }
     .page {
         min-height: 100vh;
         margin: auto;
@@ -107,11 +156,14 @@
     }
     #username {
         color: #305cde;
-        padding-bottom: 2%;
     }
     .dividerTitle {
         border-bottom: thick solid #EFBF04;
         margin-bottom: 1%;
+        margin-top: 4%;
+    }
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     .flex-center {
         display: flex;
@@ -121,6 +173,9 @@
     }
     .round-top-corners {
         border-radius: 3% 3% 0 0;
+    }
+    .full-width {
+        width: 100%;
     }
     /* Gives effect of a border */
     .flag-outer-border{
@@ -142,13 +197,17 @@
         width: 95%;
         height: 96%;
         clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%);
-        background-color: #1C39BB;
+        background: #1C39BB;
         color: #FFFFFF;
         text-align: center;
         padding: 10% 5% 25% 5%;
     }
     .leagueContainer {
         height: 70%;
+        align-items: baseline;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .leagueName {
         font-size: 1.5rem;
@@ -157,6 +216,7 @@
     .championText {
         font-size: 2rem;
         margin-top: -12px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
     .yearContainer {
         display: flex;
@@ -185,12 +245,25 @@
     .bronze-trophy {
         color: #CD7F32;
     }
+    .toilet-paper {
+        background-image: url({% static 'toiletpaperv2.svg' %});
+        background-size: cover;
+        background-position: center;
+        aspect-ratio: 1;
+        font-size: 1.25rem;
+        font-family: 'Jersey 15';
+        padding-top: 5%;
+        padding-right: 5%;
+    }
 </style>
 
 <script>
     appendObjectsToDiv({{ league_wins|safe }}, "leaguesWonWrapper");
+    appendObjectsToDiv({{ consolation_wins|safe }}, "consolationsWonWrapper");
 
     function appendObjectsToDiv(objects, divId) {
+        if (!objects || objects.length === 0) return;
+
         // Get the div element by ID
         const containerDiv = document.getElementById(divId);
         containerDiv.innerHTML = '';
@@ -213,15 +286,20 @@
                 trophyClass = "bronze-trophy";
             }
 
+            let backgroundColorClass = "royal-blue";
+            if (text == "Consolation Winner"){
+                backgroundColorClass = "charcoal-gray";
+            }
+
             // Generate the HTML for each object
             const html = `
                 <div class="col">
-                    <div class="flag-outer-border flex-center round-top-corners">
+                    <div class="flag-outer-border flex-center round-top-corners ${backgroundColorClass}">
                         <div class="flag-inner-border flex-center round-top-corners">
-                            <div class="flag flex-center round-top-corners">
+                            <div class="flag flex-center round-top-corners ${backgroundColorClass}">
                                 <div class="leagueContainer">
-                                    <div class="leagueName jersey-15">${name}</div>
-                                    <div class="${textClass}">${text}</div>
+                                    <div class="leagueName full-width jersey-15">${name}</div>
+                                    <div class="${textClass} full-width">${text}</div>
                                 </div>
                                 <div class="yearContainer jersey-15">
                                     <div class="year">20</div>

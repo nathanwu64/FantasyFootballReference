@@ -45,6 +45,14 @@ def get_playoff_bracket(league_id):
     response.raise_for_status()
     return response.json()
 
+def get_consolation_bracket(league_id):
+    """Fetches losers playoff bracket from Sleeper."""
+    print(f'Getting league consolation results for {league_id}')
+    url = f"https://api.sleeper.app/v1/league/{league_id}/losers_bracket"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
 def get_dynasty_league_ids(league_id):
     """Get a list of league IDs for each year of a dynasty league"""
     print(f'Getting previous leagues for {league_id}')
