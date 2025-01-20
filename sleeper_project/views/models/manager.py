@@ -7,6 +7,8 @@ class Manager:
         self.username = username
         self.user_info = self.get_user_info()
         self.user_id = self.user_info['user_id']
+        self.manager_since = 2024
+        self.championships = 0
 
     def get_manager_page_data(self):
         self.get_user_leagues_objects()
@@ -23,6 +25,7 @@ class Manager:
         # Create a list of League objects with attribute data
         league_ids = self.get_user_league_ids()
         self.league_objects =[]
+        self.total_leagues = len(league_ids)
         for l in league_ids:
             id = l['league_id']
             league = League(league_id=id)
@@ -39,11 +42,16 @@ class Manager:
             if not user_roster:
                 continue
 
+            year = int(l.league_data['season'])
+            if year < self.manager_since:
+                self.manager_since = year
+
             roster_id = user_roster['roster_id']
 
             if roster_id == l.first_place_roster_id:
                 placement = 1
                 text = 'Champion'
+                self.championships += 1
             elif roster_id == l.second_place_roster_id:
                 placement = 2
                 text = 'Runner-Up'
@@ -57,7 +65,7 @@ class Manager:
             if placement:
                 leagues_won.append({
                     'name': l.league_data['name'],
-                    'year': int(l.league_data['season']),
+                    'year': year,
                     'placement': placement,
                     'text': text
                 })
@@ -91,13 +99,13 @@ class Manager:
                 continue
 
             if roster_id == l.losers_bracket_winner_roster_id:
-                name = l.league_data['name'],
+                name = l.league_data['name']
                 year = int(l.league_data['season'])
                 if l.loser_bracket_type == 'toilet':
                     toilet_bowl_championships.append({
                         'name': name,
                         'year': year,
-                        'text': 'Last Place'
+                        'text': 'Toilet Bowl'
                     })
                 elif l.loser_bracket_type == 'consolation':
                     consolation_championships.append({
