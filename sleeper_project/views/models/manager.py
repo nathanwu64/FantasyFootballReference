@@ -14,6 +14,7 @@ class Manager:
         self.get_user_leagues_objects()
         self.leagues_won = self.get_user_league_wins()
         self.toilets_won, self.consolations_won = self.get_consolation_and_toilet_wins()
+        self.get_win_loss_records()
 
     def get_user_info(self):
         return sleeper_api.get_user_info(self.username)
@@ -21,16 +22,31 @@ class Manager:
     def get_user_league_ids(self):
         return sleeper_api.get_user_leagues(self.user_id)
 
+
+
+    def process_league(self, l):
+        """
+        Function to process a single league.
+        Initializes a League object, fetches its data, and returns it.
+        """
+        league_id = l['league_id']
+        league = League(league_id=league_id)
+        league.get_all_league_data()
+        return league
+
     def get_user_leagues_objects(self):
-        # Create a list of League objects with attribute data
+        """
+        Method to fetch league data using multiprocessing.
+        """
         league_ids = self.get_user_league_ids()
-        self.league_objects =[]
+        self.league_objects = []
         self.total_leagues = len(league_ids)
-        for l in league_ids:
-            id = l['league_id']
-            league = League(league_id=id)
-            league.get_all_league_data()
-            self.league_objects.append(league)
+        from concurrent.futures import ProcessPoolExecutor
+
+        # Use ProcessPoolExecutor for parallel execution
+        with ProcessPoolExecutor() as executor:
+            # Map the processing function to league_ids
+            self.league_objects = list(executor.map(self.process_league, league_ids))
 
     def get_user_league_wins(self):
         # Get 1st, 2nd, 3rd placements for a user based on a list of league ids
@@ -125,3 +141,83 @@ class Manager:
             key=lambda x: (-x["year"])  # Primary: placement (1 first), Secondary: Year (descending)
         )
         return toilet_bowl_championships, consolation_championships
+    
+    def get_win_loss_records(self):
+        import pandas as pd
+        pd.set_option('display.max_rows', 500)
+        pd.set_option('display.max_columns', 500)
+        pd.set_option('display.width', 1000)
+        all_records = pd.DataFrame()
+
+        for l in self.league_objects:
+            record_df = l.user_map_df.copy()
+            # R-W = Regular season wins, P-L = Postseason losses, etc.
+            record_df['W'] = 0
+            record_df['L'] = 0
+            record_df['T'] = 0
+            # record_df['P-W'] = 0
+            # record_df['P-L'] = 0
+            # record_df['P-T'] = 0
+
+            try:
+                roster_id = l.user_map_df[l.user_map_df['user_id'] == self.user_id].iloc[0]["roster_id"]
+            except:
+                print(f'Cannot find user in {l.league_data['name']}. Was most likely a co-owner.')
+                continue
+
+            for week_dict in l.matchups:
+                matchups = week_dict['matchups']
+                is_postseason = week_dict['is_postseason']
+
+                for m in matchups:
+                    """In weeks without an opponent, such as a bye week, Sleeper lists the opponent as the previous week's 
+                    opponent. Match-up ID will be None."""
+                    matchup_id = m["matchup_id"]
+                    if m["roster_id"] == roster_id and matchup_id:
+                        user_points = m["points"]
+                        matchup_id = m["matchup_id"]
+                        opponent = next((match for match in matchups if match['matchup_id'] == matchup_id
+                                         and match['roster_id'] != roster_id), None)
+
+                        opponent_points = opponent["points"]
+                        opponent_roster_id = opponent["roster_id"]
+
+                        try:
+                            opponent_name = l.user_map_df[l.user_map_df['roster_id'] == opponent_roster_id].iloc[0]["username"]
+                        except:
+                            print('Cannot map opponent roster id to a username.')
+                            continue
+
+                        if user_points > opponent_points:
+                            # if is_postseason:
+                            #     col = 'P-W'
+                            # else:
+                            #     col = 'R-W'
+                            record_df.loc[record_df['username'] == opponent_name, 'W'] += 1
+
+                        elif user_points < opponent_points:
+                            # if is_postseason:
+                            #     col = 'P-L'
+                            # else:
+                            #     col = 'R-L'
+                            record_df.loc[record_df['username'] == opponent_name, 'L'] += 1
+
+                        elif user_points == opponent_points:
+                            # if is_postseason:
+                            #     col = 'P-T'
+                            # else:
+                            #     col = 'R-T'
+                            record_df.loc[record_df['username'] == opponent_name, 'T'] += 1
+
+            all_records = pd.concat([all_records, record_df])
+
+        # Group by user_id and aggregate
+        all_records = all_records.groupby('user_id', as_index=False).agg({
+            'username': 'first',  # Take the first username for each user_id
+            'W': 'sum',
+            'L': 'sum',
+            'T': 'sum',
+        })
+        all_records = all_records.sort_values('W', ascending=False)
+        self.records = all_records.drop(columns='user_id').to_dict('records')
+

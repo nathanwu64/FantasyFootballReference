@@ -7,7 +7,6 @@ from sleeper_project.views.models.manager import Manager
 def manager_page(request, username):
     m = Manager(username)
     m.get_manager_page_data()
-    print(m.toilets_won)
     return render(request, 'manager.html',{
         'username': username,
         'league_wins': m.leagues_won,
@@ -15,6 +14,7 @@ def manager_page(request, username):
         'consolation_wins': m.consolations_won,
         'manager_since': m.manager_since,
         'total_leagues': m.total_leagues,
-        'championships': m.championships
+        'championships': m.championships,
+        'records': m.records
     })
 

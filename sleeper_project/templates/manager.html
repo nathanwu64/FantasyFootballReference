@@ -88,6 +88,18 @@
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="full-width">
+                <h3 class="dividerTitle tagline">
+                  The Library /
+                  <small class="text-body-secondary">See your records.</small>
+                </h3>
+                <div class="colHalf">
+                    <table id="recordsTable" class="table table-dark table-hover"></table>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>
@@ -247,12 +259,32 @@
     .colHalf {
         width: 50%;
     }
+    #recordsTable {
+        font-family: 'Jersey 15';
+        font-size: 1.25rem;
+        opacity: 0.9;
+    }
+    #recordsTable th:first-of-type {
+        border-top-left-radius: 10px;
+    }
+    #recordsTable th:last-of-type {
+      border-top-right-radius: 10px;
+    }
+    #recordsTable tr:last-of-type td:first-of-type {
+      border-bottom-left-radius: 10px;
+      border-bottom-width: 0px;
+    }
+    #recordsTable tr:last-of-type td:last-of-type {
+      border-bottom-right-radius: 10px;
+      border-bottom-width: 0px;
+    }
 </style>
 
 <script>
     appendObjectsToDiv({{ league_wins|safe }}, "leaguesWonWrapper");
     appendObjectsToDiv({{ consolation_wins|safe }}, "consolationsWonWrapper");
     appendObjectsToDiv({{ toilet_wins|safe }}, "toiletsWonWrapper");
+    populateTableFromRecords({{ records|safe }}, "recordsTable");
 
     function appendObjectsToDiv(objects, divId) {
         if (!objects || objects.length === 0) return;
@@ -324,9 +356,55 @@
 
             // Append the generated HTML to the container div
             containerDiv.innerHTML += html;
-            console.log(containerDiv.innerHTML);
         });
     }
+
+function populateTableFromRecords(dataRecords, tableId) {
+    // Get the HTML table by ID
+    const table = document.getElementById(tableId);
+
+    // Clear the table contents
+    table.innerHTML = '';
+
+    // Ensure there are records to process
+    if (dataRecords.length === 0) {
+        console.warn('No data records provided.');
+        return;
+    }
+
+    // Get column names from the keys of the first record
+    const columns = Object.keys(dataRecords[0]);
+
+    // Create the table header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    columns.forEach(column => {
+        const th = document.createElement('th');
+        th.textContent = column; // Use the column name as header text
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Create the table body
+    const tbody = document.createElement('tbody');
+
+    dataRecords.forEach(record => {
+        const row = document.createElement('tr');
+
+        columns.forEach(column => {
+            const td = document.createElement('td');
+            td.textContent = record[column]; // Get the cell value from the record
+            row.appendChild(td);
+        });
+
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+}
 
 
 

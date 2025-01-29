@@ -1,4 +1,5 @@
 from sleeper_project.views.data import sleeper_api
+import pandas as pd
 
 
 class League:
@@ -13,6 +14,7 @@ class League:
         self.determine_loser_bracket_type()
         self.get_league_winners()
         self.get_losers_bracket_winner()
+        self.get_league_matchups()
 
     def get_league_settings(self):
         self.league_data = sleeper_api.get_league_data(self.league_id)
@@ -20,6 +22,21 @@ class League:
 
     def get_roster_data(self):
         self.roster_data = sleeper_api.get_league_rosters(self.league_id)
+
+        # Map roster_id to user ids and usernames
+        users = sleeper_api.get_league_users(self.league_id)
+        user_map_df = pd.DataFrame(self.roster_data)
+        user_map_df = user_map_df[['owner_id', 'roster_id']]
+        user_map_df = user_map_df.rename(columns={'owner_id': 'user_id'})
+
+        usernames_mapping = []
+        for user in users:
+            usernames_mapping.append({
+                "user_id": user["user_id"],
+                "username": user["display_name"],
+            })
+        username_df = pd.DataFrame(usernames_mapping)
+        self.user_map_df = user_map_df.merge(username_df, on="user_id")
 
     def determine_loser_bracket_type(self):
         if "playoff_type" in self.league_settings.keys():
@@ -51,6 +68,28 @@ class League:
         if first_place_game:
             self.losers_bracket_winner_roster_id = first_place_game['w']
 
+    def get_league_matchups(self):
+        start_week = self.league_data['settings']['start_week']
+        playoff_start_week = self.league_data['settings']['playoff_week_start']
+        league_year = self.league_data['season']
+
+        self.matchups = []
+
+        for week in range(start_week, 18):
+            matchups = sleeper_api.get_matchups(self.league_id, week)
+            if week < playoff_start_week:
+                is_postseason = False
+            else:
+                is_postseason = True
+
+            week_dict = {
+                'year': league_year,
+                'week': week,
+                'is_postseason': is_postseason,
+                'matchups': matchups
+            }
+
+            self.matchups.append(week_dict)
 
 
 

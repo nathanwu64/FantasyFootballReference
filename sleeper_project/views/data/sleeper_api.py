@@ -86,33 +86,9 @@ def get_league_users(league_id):
     response.raise_for_status()
     return response.json()
 
-def get_season_matchups(league_id):
-    """Fetches all matchups for a given season by week"""
-    print(f'Getting league matchups for {league_id}')
-    league_data = get_league_data(league_id)
-    start_week = league_data['settings']['start_week']
-    playoff_start_week = league_data['settings']['playoff_week_start']
-    league_year = league_data['season']
-
-    season_matchups = []
-
-    for week in range (start_week, 18):
-        url = f"https://api.sleeper.app/v1/league/{league_id}/matchups/{week}"
-        response = requests.get(url)
-        response.raise_for_status()
-
-        if week < playoff_start_week:
-            is_postseason = False
-        else:
-            is_postseason = True
-
-        week_dict = {
-            'year': league_year,
-            'week': week,
-            'is_postseason': is_postseason,
-            'matchups': response.json()
-        }
-
-        season_matchups.append(week_dict)
-
-    return season_matchups
+def get_matchups(league_id, week):
+    """Fetches all matchups for a given season's week"""
+    url = f"https://api.sleeper.app/v1/league/{league_id}/matchups/{week}"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
