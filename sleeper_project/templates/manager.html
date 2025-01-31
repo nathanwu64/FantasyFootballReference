@@ -100,6 +100,48 @@
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="full-width">
+                <h3 class="dividerTitle tagline">
+                  The Hall of Fame /
+                  <small class="text-body-secondary">See your best players.</small>
+                </h3>
+                <div class="row">
+                    <div class="col-auto">
+                        <div class="card" style="width: 18rem;">
+                            <h5 class="fugaz cardHeader card-title">Josh Allen</h5>
+                            <div class="card-body jersey-15">
+
+                                <div class="flexRow">
+                                    <div class="statBox royal-blue">
+                                        <div class="statNumber">2073</div>
+                                        <div class="statLabel">Total Points</div>
+                                    </div>
+                                    <div class="statBox royal-blue">
+                                        <div class="statNumber">22.5</div>
+                                        <div class="statLabel">Points per game</div>
+                                    </div>
+                                </div>
+                                <div class="flexRow">
+                                    <div class="statBox royal-blue">
+                                        <div class="statNumber">51.3</div>
+                                        <div class="statLabel">High Score</div>
+                                    </div>
+                                    <div class="statBox royal-blue">
+                                        <div class="statNumber">4</div>
+                                        <div class="statLabel">Leagues owned</div>
+                                    </div>
+                                </div>
+                                <h6 class="card-subtitle mb-2 text-body-secondary">Red Dragons Dynasty 2014-2024</h6>
+                                <h6 class="card-subtitle mb-2 text-body-secondary">Moneyball Mania 2023</h6>
+                                <h6 class="card-subtitle mb-2 text-body-secondary">Auction League 2021</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>
@@ -268,15 +310,44 @@
         border-top-left-radius: 10px;
     }
     #recordsTable th:last-of-type {
-      border-top-right-radius: 10px;
+        border-top-right-radius: 10px;
     }
     #recordsTable tr:last-of-type td:first-of-type {
-      border-bottom-left-radius: 10px;
-      border-bottom-width: 0px;
+        border-bottom-left-radius: 10px;
+        border-bottom-width: 0px;
     }
     #recordsTable tr:last-of-type td:last-of-type {
-      border-bottom-right-radius: 10px;
-      border-bottom-width: 0px;
+        border-bottom-right-radius: 10px;
+        border-bottom-width: 0px;
+    }
+
+    /* Hall of Fame Player Cards */
+    .cardHeader {
+        padding: 5% 5% 4% 5%;
+        border-bottom: thick solid #305cde;
+        width: 50%;
+    }
+    .flexRow {
+        display: flex;
+    }
+    .statBox {
+        margin: 0 auto 5% auto;
+        width: 45%;
+        color: white;
+        padding: 5%;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .statNumber {
+        color: #EFBF04;
+        font-size: 2rem;
+        font-family: "Fugaz One", serif;
+    }
+    .statLabel {
+        font-size: 0.9rem;
     }
 </style>
 
