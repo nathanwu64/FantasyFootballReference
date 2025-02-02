@@ -95,7 +95,7 @@
                   The Library /
                   <small class="text-body-secondary">See your records.</small>
                 </h3>
-                <div class="colHalf">
+                <div id="recordsTableWrapper" class="colHalf">
                     <table id="recordsTable" class="table table-dark table-hover"></table>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                   The Hall of Fame /
                   <small class="text-body-secondary">See your best players.</small>
                 </h3>
-                <div class="row">
+                <div id="topPlayersWrapper" class="row">
                     <div class="col-auto">
                         <div class="card" style="width: 18rem;">
                             <h5 class="fugaz cardHeader card-title">Josh Allen</h5>
@@ -320,6 +320,11 @@
         border-bottom-right-radius: 10px;
         border-bottom-width: 0px;
     }
+    #recordsTableWrapper {
+        max-height: 500px;
+        overflow: scroll;
+        border-radius: 10px;
+    }
 
     /* Hall of Fame Player Cards */
     .cardHeader {
@@ -343,7 +348,7 @@
     }
     .statNumber {
         color: #EFBF04;
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-family: "Fugaz One", serif;
     }
     .statLabel {
@@ -356,6 +361,7 @@
     appendObjectsToDiv({{ consolation_wins|safe }}, "consolationsWonWrapper");
     appendObjectsToDiv({{ toilet_wins|safe }}, "toiletsWonWrapper");
     populateTableFromRecords({{ records|safe }}, "recordsTable");
+    appendPlayerCards({{ top_players|safe }}, "topPlayersWrapper");
 
     function appendObjectsToDiv(objects, divId) {
         if (!objects || objects.length === 0) return;
@@ -477,6 +483,52 @@ function populateTableFromRecords(dataRecords, tableId) {
     table.appendChild(tbody);
 }
 
+function appendPlayerCards(players, divId) {
+    // Get the target div
+    const container = document.getElementById(divId);
+
+    if (!container || players.length === 0) return; // Exit if no container or empty list
+
+    container.innerHTML = '';
+
+    players.forEach(player => {
+        // Create the card HTML using template literals
+        const cardHTML = `
+            <div class="col-auto">
+                <div class="card" style="width: 18rem;">
+                    <h5 class="fugaz cardHeader card-title">
+                        <div>${player.first_name}</div>
+                        <div>${player.last_name}</div>
+                    </h5>
+                    <div class="card-body jersey-15">
+                        <div class="flexRow">
+                            <div class="statBox royal-blue">
+                                <div class="statNumber">${player.total_points.toFixed(1)}</div>
+                                <div class="statLabel">Total Points</div>
+                            </div>
+                            <div class="statBox royal-blue">
+                                <div class="statNumber">${player.ppg.toFixed(2)}</div>
+                                <div class="statLabel">Points per game</div>
+                            </div>
+                        </div>
+                        <div class="flexRow">
+                            <div class="statBox royal-blue">
+                                <div class="statNumber">${player.high_score.toFixed(1)}</div>
+                                <div class="statLabel">High Score</div>
+                            </div>
+                            <div class="statBox royal-blue">
+                                <div class="statNumber">${player.games}</div>
+                                <div class="statLabel">Games played</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        // Append the generated HTML to the container
+        container.insertAdjacentHTML('beforeend', cardHTML);
+    });
+}
 
 
 </script>

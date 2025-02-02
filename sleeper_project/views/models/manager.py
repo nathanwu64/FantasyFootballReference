@@ -1,5 +1,7 @@
 from sleeper_project.views.data import sleeper_api
 from sleeper_project.views.models.league import League
+import pandas as pd
+from sleeper_project.settings import BASE_DIR
 
 
 class Manager:
@@ -143,11 +145,8 @@ class Manager:
         return toilet_bowl_championships, consolation_championships
     
     def get_win_loss_records(self):
-        import pandas as pd
-        pd.set_option('display.max_rows', 500)
-        pd.set_option('display.max_columns', 500)
-        pd.set_option('display.width', 1000)
         all_records = pd.DataFrame()
+        player_stats = pd.DataFrame(columns=['playerID', 'total_points', 'games', 'high_score'])
 
         for l in self.league_objects:
             record_df = l.user_map_df.copy()
@@ -181,6 +180,27 @@ class Manager:
 
                         opponent_points = opponent["points"]
                         opponent_roster_id = opponent["roster_id"]
+
+                        player_points = m["players_points"]
+
+                        for playerID, score in player_points.items():
+                            # Convert playerID to string to match DataFrame consistency
+                            playerID = str(playerID)
+
+                            # Check if playerID already exists in the DataFrame
+                            if playerID in player_stats['playerID'].values:
+                                # Update existing player stats
+                                player_stats.loc[player_stats['playerID'] == playerID, 'total_points'] += score
+                                player_stats.loc[player_stats['playerID'] == playerID, 'games'] += 1
+                                current_high_score = player_stats[player_stats['playerID'] == playerID]['high_score'].iloc[0]
+                                if score >= current_high_score:
+                                    player_stats.loc[player_stats['playerID'] == playerID, 'high_score'] = score
+                            else:
+                                # Add new player entry
+                                new_row = pd.DataFrame(
+                                    {'playerID': [playerID], 'total_points': [score], 'games': [1],
+                                     'high_score': [score]})
+                                player_stats = pd.concat([player_stats, new_row], ignore_index=True)
 
                         try:
                             opponent_name = l.user_map_df[l.user_map_df['roster_id'] == opponent_roster_id].iloc[0]["username"]
@@ -221,3 +241,10 @@ class Manager:
         all_records = all_records.sort_values('W', ascending=False)
         self.records = all_records.drop(columns='user_id').to_dict('records')
 
+        csv_path = f'{BASE_DIR}/sleeper_project/views/data/players.csv'
+        player_data = pd.read_csv(csv_path)
+        player_data = player_data[['playerID', 'first_name', 'last_name']]
+        player_stats = player_stats.merge(player_data, on='playerID')
+        player_stats['ppg'] = player_stats['total_points'] / player_stats['games']
+        player_stats = player_stats.sort_values('total_points', ascending=False)
+        self.top_players = player_stats.head(4).to_dict('records')

@@ -92,3 +92,17 @@ def get_matchups(league_id, week):
     response = requests.get(url)
     response.raise_for_status()
     return response.json()
+
+def get_all_players():
+    """5 MB PULL - DO NOT RUN THIS MORE THAN ONCE PER DAY"""
+    import pandas as pd
+    url = "https://api.sleeper.app/v1/players/nfl"
+    response = requests.get(url)
+    response.raise_for_status()
+
+    # Convert JSON to list of dictionaries
+    df = pd.DataFrame.from_dict(response.json(), orient='index').reset_index()
+
+    # Rename 'index' column to 'playerID'
+    df = df.rename(columns={'index': 'playerID'})
+    df.to_csv('players.csv')
