@@ -492,6 +492,13 @@ function appendPlayerCards(players, divId) {
     container.innerHTML = '';
 
     players.forEach(player => {
+        // Create text of all leagues
+        let leaguesHTML = '';
+        for (let league in player.leagues) {
+            let text = '<div>' + league + ' - ' +  player.leagues[league] + '</div>';
+            leaguesHTML += text;
+        };
+
         // Create the card HTML using template literals
         const cardHTML = `
             <div class="col-auto">
@@ -521,6 +528,7 @@ function appendPlayerCards(players, divId) {
                                 <div class="statLabel">Games played</div>
                             </div>
                         </div>
+                        ${leaguesHTML}
                     </div>
                 </div>
             </div>`;

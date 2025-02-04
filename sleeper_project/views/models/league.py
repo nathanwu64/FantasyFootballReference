@@ -19,6 +19,8 @@ class League:
     def get_league_settings(self):
         self.league_data = sleeper_api.get_league_data(self.league_id)
         self.league_settings = self.league_data["settings"]
+        self.name = self.league_data['name']
+        self.year = int(self.league_data['season'])
 
     def get_roster_data(self):
         self.roster_data = sleeper_api.get_league_rosters(self.league_id)

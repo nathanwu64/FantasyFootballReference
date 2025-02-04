@@ -2,6 +2,18 @@ from sleeper_project.views.data import sleeper_api
 from sleeper_project.views.models.league import League
 import pandas as pd
 from sleeper_project.settings import BASE_DIR
+from collections import defaultdict
+
+
+# Function to merge dictionaries, remove duplicates, and format as a string
+def merge_dicts(dict_list):
+    merged = defaultdict(set)  # Use set to store unique values
+    for d in dict_list:
+        for key, value in d.items():
+            merged[key].add(value)  # Add to set (removes duplicates)
+
+    # Convert lists to sorted, comma-separated strings
+    return {key: ", ".join(map(str, sorted(values))) for key, values in merged.items()}
 
 
 class Manager:
@@ -117,18 +129,16 @@ class Manager:
                 continue
 
             if roster_id == l.losers_bracket_winner_roster_id:
-                name = l.league_data['name']
-                year = int(l.league_data['season'])
                 if l.loser_bracket_type == 'toilet':
                     toilet_bowl_championships.append({
-                        'name': name,
-                        'year': year,
+                        'name': l.name,
+                        'year': l.year,
                         'text': 'Toilet Bowl'
                     })
                 elif l.loser_bracket_type == 'consolation':
                     consolation_championships.append({
-                        'name': name,
-                        'year': year,
+                        'name': l.name,
+                        'year': l.year,
                         'text': 'Consolation Winner'
                     })
 
@@ -146,7 +156,7 @@ class Manager:
     
     def get_win_loss_records(self):
         all_records = pd.DataFrame()
-        player_stats = pd.DataFrame(columns=['playerID', 'total_points', 'games', 'high_score'])
+        player_stats = pd.DataFrame(columns=['playerID', 'total_points', 'games', 'high_score', 'leagues'])
 
         for l in self.league_objects:
             record_df = l.user_map_df.copy()
@@ -182,16 +192,26 @@ class Manager:
                         opponent_roster_id = opponent["roster_id"]
 
                         player_points = m["players_points"]
-
+                        starters = m["starters"]
                         for playerID, score in player_points.items():
+                            # Don't count players on the bench
+                            if playerID not in starters:
+                                continue
+
                             # Convert playerID to string to match DataFrame consistency
                             playerID = str(playerID)
-
+                            league_text = f'{l.name} - {l.year}'
+                            league_text = {l.name: l.year}
                             # Check if playerID already exists in the DataFrame
                             if playerID in player_stats['playerID'].values:
                                 # Update existing player stats
                                 player_stats.loc[player_stats['playerID'] == playerID, 'total_points'] += score
                                 player_stats.loc[player_stats['playerID'] == playerID, 'games'] += 1
+
+                                player_stats.loc[player_stats["playerID"] == playerID, "leagues"] = player_stats.loc[
+                                    player_stats["playerID"] == playerID, "leagues"].apply(lambda x: list(x + [league_text]))
+
+                                # Check if need to update high score
                                 current_high_score = player_stats[player_stats['playerID'] == playerID]['high_score'].iloc[0]
                                 if score >= current_high_score:
                                     player_stats.loc[player_stats['playerID'] == playerID, 'high_score'] = score
@@ -199,7 +219,7 @@ class Manager:
                                 # Add new player entry
                                 new_row = pd.DataFrame(
                                     {'playerID': [playerID], 'total_points': [score], 'games': [1],
-                                     'high_score': [score]})
+                                     'high_score': [score], 'leagues': [[league_text]]})
                                 player_stats = pd.concat([player_stats, new_row], ignore_index=True)
 
                         try:
@@ -247,4 +267,6 @@ class Manager:
         player_stats = player_stats.merge(player_data, on='playerID')
         player_stats['ppg'] = player_stats['total_points'] / player_stats['games']
         player_stats = player_stats.sort_values('total_points', ascending=False)
+        # Create dictionaries where the league names are keys and the years are values
+        player_stats['leagues'] = player_stats['leagues'].apply(merge_dicts)
         self.top_players = player_stats.head(4).to_dict('records')
