@@ -157,16 +157,14 @@ class Manager:
     def get_win_loss_records(self):
         all_records = pd.DataFrame()
         player_stats = pd.DataFrame(columns=['playerID', 'total_points', 'games', 'high_score', 'leagues'])
+        head_to_head = pd.DataFrame(columns=['league', 'year', 'week', 'postseason',
+                                             'opponentID', 'opponentName', 'PF', 'PA'])
 
         for l in self.league_objects:
             record_df = l.user_map_df.copy()
-            # R-W = Regular season wins, P-L = Postseason losses, etc.
             record_df['W'] = 0
             record_df['L'] = 0
             record_df['T'] = 0
-            # record_df['P-W'] = 0
-            # record_df['P-L'] = 0
-            # record_df['P-T'] = 0
 
             try:
                 roster_id = l.user_map_df[l.user_map_df['user_id'] == self.user_id].iloc[0]["roster_id"]
@@ -190,6 +188,8 @@ class Manager:
 
                         opponent_points = opponent["points"]
                         opponent_roster_id = opponent["roster_id"]
+                        if user_points == 0 or opponent_points ==0:
+                            continue
 
                         player_points = m["players_points"]
                         starters = m["starters"]
@@ -200,7 +200,6 @@ class Manager:
 
                             # Convert playerID to string to match DataFrame consistency
                             playerID = str(playerID)
-                            league_text = f'{l.name} - {l.year}'
                             league_text = {l.name: l.year}
                             # Check if playerID already exists in the DataFrame
                             if playerID in player_stats['playerID'].values:
@@ -224,30 +223,32 @@ class Manager:
 
                         try:
                             opponent_name = l.user_map_df[l.user_map_df['roster_id'] == opponent_roster_id].iloc[0]["username"]
+                            opponentID = l.user_map_df[l.user_map_df['roster_id'] == opponent_roster_id].iloc[0][
+                                "user_id"]
                         except:
                             print('Cannot map opponent roster id to a username.')
                             continue
 
                         if user_points > opponent_points:
-                            # if is_postseason:
-                            #     col = 'P-W'
-                            # else:
-                            #     col = 'R-W'
                             record_df.loc[record_df['username'] == opponent_name, 'W'] += 1
 
                         elif user_points < opponent_points:
-                            # if is_postseason:
-                            #     col = 'P-L'
-                            # else:
-                            #     col = 'R-L'
                             record_df.loc[record_df['username'] == opponent_name, 'L'] += 1
 
                         elif user_points == opponent_points:
-                            # if is_postseason:
-                            #     col = 'P-T'
-                            # else:
-                            #     col = 'R-T'
                             record_df.loc[record_df['username'] == opponent_name, 'T'] += 1
+
+                        matchup_row = pd.DataFrame({
+                            'league': [l.name],
+                            'year': [l.year],
+                            'week': [week_dict['week']],
+                            'postseason': [is_postseason],
+                            'opponentID': [opponentID],
+                            'opponentName': [opponent_name],
+                            'PF': [user_points],
+                            'PA': [opponent_points]
+                        })
+                        head_to_head = pd.concat([head_to_head, matchup_row])
 
             all_records = pd.concat([all_records, record_df])
 
@@ -263,10 +264,14 @@ class Manager:
 
         csv_path = f'{BASE_DIR}/sleeper_project/views/data/players.csv'
         player_data = pd.read_csv(csv_path)
-        player_data = player_data[['playerID', 'first_name', 'last_name']]
+        player_data = player_data[['playerID', 'first_name', 'last_name', 'position', 'team']]
         player_stats = player_stats.merge(player_data, on='playerID')
         player_stats['ppg'] = player_stats['total_points'] / player_stats['games']
         player_stats = player_stats.sort_values('total_points', ascending=False)
         # Create dictionaries where the league names are keys and the years are values
         player_stats['leagues'] = player_stats['leagues'].apply(merge_dicts)
         self.top_players = player_stats.head(4).to_dict('records')
+
+        head_to_head = head_to_head.sort_values(['opponentID', 'year', 'week'])
+        head_to_head = head_to_head[head_to_head['opponentName'] == 'vxyou']
+        print(head_to_head)

@@ -71,8 +71,9 @@ class League:
             self.losers_bracket_winner_roster_id = first_place_game['w']
 
     def get_league_matchups(self):
-        start_week = self.league_data['settings']['start_week']
-        playoff_start_week = self.league_data['settings']['playoff_week_start']
+        settings = self.league_data['settings']
+        start_week = settings['start_week'] if 'start_week' in settings.keys() else 1
+        playoff_start_week = settings['playoff_week_start']
         league_year = self.league_data['season']
 
         self.matchups = []

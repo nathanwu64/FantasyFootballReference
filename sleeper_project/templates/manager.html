@@ -98,6 +98,18 @@
                 <div id="recordsTableWrapper" class="colHalf">
                     <table id="recordsTable" class="table table-dark table-hover"></table>
                 </div>
+
+                <div class="colHalf">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flexRow">
+                                <div class="hh-username textRight">silv3rback</div>
+                                <div class="hh-record">10-12</div>
+                                <div class="hh-username">vxyou</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -327,10 +339,21 @@
     }
 
     /* Hall of Fame Player Cards */
-    .cardHeader {
-        padding: 5% 5% 4% 5%;
+    .card {
+        height: 100%;
+    }
+    .cardHeaderLeft {
+        padding: 5% 5% 4% 8%;
         border-bottom: thick solid #305cde;
         width: 50%;
+    }
+    .cardHeaderRight {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        padding: 5% 10% 4% 5%;
+        width: 50%;
+        color: #305cde;
     }
     .flexRow {
         display: flex;
@@ -354,6 +377,32 @@
     .statLabel {
         font-size: 0.9rem;
     }
+    .leagueNamesWrapper {
+        width: 90%;
+        margin: auto;
+        color: #4A4A4A;
+    }
+
+    /* Head to head cards */
+    .hh-username {
+        font-family: "Jersey 15", serif;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        width: 40%;
+    }
+    .hh-record {
+        padding: 0 20px 0 20px;
+        font-size: 3rem;
+        font-family: "Bebas Neue", serif;
+        width: 30%;
+        display: flex;
+        justify-content: center;
+    }
+    .textRight {
+        justify-content: right;
+    }
+
 </style>
 
 <script>
@@ -503,10 +552,16 @@ function appendPlayerCards(players, divId) {
         const cardHTML = `
             <div class="col-auto">
                 <div class="card" style="width: 18rem;">
-                    <h5 class="fugaz cardHeader card-title">
-                        <div>${player.first_name}</div>
-                        <div>${player.last_name}</div>
-                    </h5>
+                    <div class="flexRow fugaz">
+                        <h5 class="cardHeaderLeft card-title">
+                            <div>${player.first_name}</div>
+                            <div>${player.last_name}</div>
+                        </h5>
+                        <div class="cardHeaderRight card-title">
+                            <div>${player.team}</div>
+                            <div>${player.position}</div>
+                        </div>
+                    </div>
                     <div class="card-body jersey-15">
                         <div class="flexRow">
                             <div class="statBox royal-blue">
@@ -528,7 +583,9 @@ function appendPlayerCards(players, divId) {
                                 <div class="statLabel">Games played</div>
                             </div>
                         </div>
-                        ${leaguesHTML}
+                        <div class="leagueNamesWrapper">
+                            ${leaguesHTML}
+                        </div>
                     </div>
                 </div>
             </div>`;
