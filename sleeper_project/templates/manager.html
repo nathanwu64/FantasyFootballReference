@@ -95,17 +95,50 @@
                   The Library /
                   <small class="text-body-secondary">See your records.</small>
                 </h3>
-                <div id="recordsTableWrapper" class="colHalf">
-                    <table id="recordsTable" class="table table-dark table-hover"></table>
-                </div>
 
-                <div class="colHalf">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="flexRow">
-                                <div class="hh-username textRight">silv3rback</div>
-                                <div class="hh-record">10-12</div>
-                                <div class="hh-username">vxyou</div>
+                <div class="flexRow">
+                    <div id="recordsTableWrapper" class="colHalf">
+                        <table id="recordsTable" class="table table-dark table-hover"></table>
+                    </div>
+
+                    <div class="colHalf">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="hh-title">
+                                    <div class="user-wrapper-left">
+                                        <div class="hh-username">
+                                            <img class="avatar" src={% static 'avatar_sample.png' %}>
+                                            silv3rback
+                                        </div>
+                                    </div>
+                                    <div class="hh-record">10 - 12</div>
+                                    <div class="user-wrapper-right">
+                                        <div class="hh-username">
+                                            <img class="avatar" src={% static 'avatar_sample2.png' %}>
+                                            vxyou
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flexRow score-card">
+                                    <div class="score-card-league">Red Dragons Dynasty</div>
+                                    <div class="flexRow score-values">
+                                        <div class="colHalf">silv3rback</div><div class="colHalf text-right">154.76</div>
+                                    </div>
+                                    <div class="flexRow score-values text-secondary">
+                                        <div class="colHalf">vxyou</div><div class="colHalf text-right">153.25</div>
+                                    </div>
+                                    <div class="score-card-league">Week 13 | 2024</div>
+                                </div>
+                                <div class="flexRow score-card">
+                                    <div class="score-card-league">Red Dragons Dynasty</div>
+                                    <div class="flexRow score-values text-secondary">
+                                        <div class="colHalf">silv3rback</div><div class="colHalf text-right">134.16</div>
+                                    </div>
+                                    <div class="flexRow score-values">
+                                        <div class="colHalf">vxyou</div><div class="colHalf text-right">183.12</div>
+                                    </div>
+                                    <div class="score-card-league">Week 1 | 2024</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -384,25 +417,68 @@
     }
 
     /* Head to head cards */
+    .hh-title {
+        display: flex;
+        justify-content: center;
+    }
+    .avatar {
+        border-radius: 15px;
+    }
+    .user-wrapper-left {
+        display: flex;
+        justify-content: end;
+    }
+    .user-wrapper-right {
+        display: flex;
+        justify-content: start;
+    }
     .hh-username {
         font-family: "Jersey 15", serif;
         font-size: 1.5rem;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        width: 40%;
     }
     .hh-record {
         padding: 0 20px 0 20px;
-        font-size: 3rem;
+        font-size: 3.5rem;
         font-family: "Bebas Neue", serif;
-        width: 30%;
         display: flex;
         justify-content: center;
+        align-items: center;
     }
-    .textRight {
-        justify-content: right;
+    .text-right {
+        text-align: right;
     }
-
+    .avatar_one {
+        background-image: url({% static 'avatar_sample.png' %});
+        background-size: cover;
+        background-position: center;
+        aspect-ratio: 1;
+    }
+    .avatar_two {
+        background-image: url({% static 'avatar_sample2.png' %});
+        background-size: cover;
+        background-position: center;
+        aspect-ratio: 1;
+    }
+    .score-card {
+        flex-direction: column;
+        width: 65%;
+        margin: auto;
+        margin-top: 15px;
+        border-bottom: thick solid #1C39BB;
+    }
+    .score-card-league {
+        font-family: 'Jersey 15', serif;
+        color: #4A4A4A;
+        margin-bottom: 10px;
+        margin-top: 10px
+    }
+    .score-values {
+        font-size: 1.5rem;
+        color: #1C39BB;
+    }
 </style>
 
 <script>
