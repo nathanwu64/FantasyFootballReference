@@ -157,7 +157,7 @@ class Manager:
     def get_win_loss_records(self):
         all_records = pd.DataFrame()
         player_stats = pd.DataFrame(columns=['playerID', 'total_points', 'games', 'high_score', 'leagues'])
-        head_to_head = pd.DataFrame(columns=['league', 'year', 'week', 'postseason',
+        head_to_head = pd.DataFrame(columns=['league', 'year', 'week',
                                              'opponentID', 'opponentName', 'PF', 'PA'])
 
         for l in self.league_objects:
@@ -242,7 +242,7 @@ class Manager:
                             'league': [l.name],
                             'year': [l.year],
                             'week': [week_dict['week']],
-                            'postseason': [is_postseason],
+                            # 'postseason': [is_postseason],
                             'opponentID': [opponentID],
                             'opponentName': [opponent_name],
                             'PF': [user_points],
@@ -272,6 +272,5 @@ class Manager:
         player_stats['leagues'] = player_stats['leagues'].apply(merge_dicts)
         self.top_players = player_stats.head(4).to_dict('records')
 
-        head_to_head = head_to_head.sort_values(['opponentID', 'year', 'week'])
-        head_to_head = head_to_head[head_to_head['opponentName'] == 'vxyou']
-        print(head_to_head)
+        head_to_head = head_to_head.sort_values(['opponentID', 'year', 'week'], ascending=False)
+        self.h2h = head_to_head.to_dict('records')

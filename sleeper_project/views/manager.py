@@ -16,6 +16,7 @@ def manager_page(request, username):
         'total_leagues': m.total_leagues,
         'championships': m.championships,
         'records': m.records,
-        'top_players': m.top_players
+        'top_players': m.top_players,
+        'h2h': m.h2h
     })
 

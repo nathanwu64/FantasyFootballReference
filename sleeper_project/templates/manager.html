@@ -101,7 +101,7 @@
                         <table id="recordsTable" class="table table-dark table-hover"></table>
                     </div>
 
-                    <div class="colHalf">
+                    <div id="hh-wrapper" class="colHalf">
                         <div class="card">
                             <div class="card-body">
                                 <div class="hh-title">
@@ -464,7 +464,7 @@
     }
     .score-card {
         flex-direction: column;
-        width: 65%;
+        width: 80%;
         margin: auto;
         margin-top: 15px;
         border-bottom: thick solid #1C39BB;
@@ -487,6 +487,7 @@
     appendObjectsToDiv({{ toilet_wins|safe }}, "toiletsWonWrapper");
     populateTableFromRecords({{ records|safe }}, "recordsTable");
     appendPlayerCards({{ top_players|safe }}, "topPlayersWrapper");
+    createHeadToHeadCard("vxyou", {{ h2h|safe }});
 
     function appendObjectsToDiv(objects, divId) {
         if (!objects || objects.length === 0) return;
@@ -671,5 +672,60 @@ function appendPlayerCards(players, divId) {
     });
 }
 
+function createHeadToHeadCard(username, data) {
+    // Get the target div
+    const container = document.getElementById('hh-wrapper');
 
+    if (!container || data.length === 0) return; // Exit if no container or empty list
+
+    const hh_data = data.filter(item => item.opponentName === 'vxyou');
+    container.innerHTML = '';
+
+    let cardHTML = `
+                    <div class="card">
+                    <div class="card-body">
+                        <div class="hh-title">
+                            <div class="user-wrapper-left">
+                                <div class="hh-username">
+                                    <img class="avatar" src={% static 'avatar_sample.png' %}>
+                                    silv3rback
+                                </div>
+                            </div>
+                            <div class="hh-record">10 - 12</div>
+                            <div class="user-wrapper-right">
+                                <div class="hh-username">
+                                    <img class="avatar" src={% static 'avatar_sample2.png' %}>
+                                    vxyou
+                                </div>
+                            </div>
+                        </div>`;
+
+    hh_data.forEach(week => {
+        // Create the card HTML using template literals
+        let userColorClass = '';
+        let oppColorClass = '';
+        if(week.PF > week.PA){
+            oppColorClass = 'text-secondary';
+        }
+        else {
+            userColorClass = 'text-secondary';
+        }
+        let weekHTML = `<div class="flexRow score-card">
+                            <div class="score-card-league">${week.league}</div>
+                            <div class="flexRow score-values ${userColorClass}">
+                                <div class="colHalf">silv3rback</div><div class="colHalf text-right">${week.PF}</div>
+                            </div>
+                            <div class="flexRow score-values ${oppColorClass}">
+                                <div class="colHalf">${week.opponentName}</div><div class="colHalf text-right">${week.PA}</div>
+                            </div>
+                            <div class="score-card-league">Week ${week.week} | ${week.year}</div>
+                        </div>`;
+
+        cardHTML += weekHTML;
+    });
+
+    cardHTML += '</div></div></div>';
+    // Append the generated HTML to the container
+    container.insertAdjacentHTML('beforeend', cardHTML);
+}
 </script>
