@@ -17,6 +17,11 @@ def manager_page(request, username):
         'championships': m.championships,
         'records': m.records,
         'top_players': m.top_players,
-        'h2h': m.h2h
+        'h2h': m.h2h,
+        'avatar_url': m.avatar_url
     })
+
+def get_avatar(request, username):
+    m = Manager(username)
+    return JsonResponse({"avatar_url": m.avatar_url})
 

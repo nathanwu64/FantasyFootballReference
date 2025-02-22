@@ -21,6 +21,7 @@ class Manager:
         self.username = username
         self.user_info = self.get_user_info()
         self.user_id = self.user_info['user_id']
+        self.avatar_url = f"https://sleepercdn.com/avatars/thumbs/{self.user_info['avatar']}"
         self.manager_since = 2024
         self.championships = 0
 
@@ -162,6 +163,7 @@ class Manager:
 
         for l in self.league_objects:
             record_df = l.user_map_df.copy()
+            record_df = record_df[record_df['user_id'] != self.user_id]
             record_df['W'] = 0
             record_df['L'] = 0
             record_df['T'] = 0
@@ -254,13 +256,13 @@ class Manager:
 
         # Group by user_id and aggregate
         all_records = all_records.groupby('user_id', as_index=False).agg({
-            'username': 'first',  # Take the first username for each user_id
+            'username': 'last',  # Take the first username for each user_id
             'W': 'sum',
             'L': 'sum',
             'T': 'sum',
         })
         all_records = all_records.sort_values('W', ascending=False)
-        self.records = all_records.drop(columns='user_id').to_dict('records')
+        self.records = all_records.to_dict('records')
 
         csv_path = f'{BASE_DIR}/sleeper_project/views/data/players.csv'
         player_data = pd.read_csv(csv_path)

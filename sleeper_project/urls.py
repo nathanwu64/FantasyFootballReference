@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from sleeper_project.views.home import home, find_leagues
-from sleeper_project.views.manager import manager_page
+from sleeper_project.views.manager import manager_page, get_avatar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
     path('find_leagues/', find_leagues, name='find_leagues'),
     path('manager/<str:username>/', manager_page, name='manager'),
+    path('get_avatar/<str:username>/', get_avatar, name='get_avatar')
 ]

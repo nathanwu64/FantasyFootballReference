@@ -97,8 +97,8 @@
                 </h3>
 
                 <div class="flexRow">
-                    <div id="recordsTableWrapper" class="colHalf">
-                        <table id="recordsTable" class="table table-dark table-hover"></table>
+                    <div id="recordsTableWrapper">
+                        <div id="recordsTitle">Click to see head to head details</div>
                     </div>
 
                     <div id="hh-wrapper" class="colHalf">
@@ -368,7 +368,16 @@
     #recordsTableWrapper {
         max-height: 500px;
         overflow: scroll;
-        border-radius: 10px;
+        border: thin solid silver;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    }
+    #recordsTitle {
+        padding: 10px 10px 0 10px;
+    }
+    .record-btn {
+        margin: 5px 10px 0 10px;
     }
 
     /* Hall of Fame Player Cards */
@@ -417,9 +426,17 @@
     }
 
     /* Head to head cards */
+    #hh-wrapper {
+        max-height: 500px;
+    }
+    .hh-card {
+        border-left: none;
+        border-radius: 0;
+    }
     .hh-title {
         display: flex;
         justify-content: center;
+        margin-top: 30px;
     }
     .avatar {
         border-radius: 15px;
@@ -431,6 +448,9 @@
     .user-wrapper-right {
         display: flex;
         justify-content: start;
+    }
+    .hh-body {
+        overflow: scroll;
     }
     .hh-username {
         font-family: "Jersey 15", serif;
@@ -446,6 +466,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        color: #1C39BB;
     }
     .text-right {
         text-align: right;
@@ -485,9 +506,9 @@
     appendObjectsToDiv({{ league_wins|safe }}, "leaguesWonWrapper");
     appendObjectsToDiv({{ consolation_wins|safe }}, "consolationsWonWrapper");
     appendObjectsToDiv({{ toilet_wins|safe }}, "toiletsWonWrapper");
-    populateTableFromRecords({{ records|safe }}, "recordsTable");
+    populateRecords("{{ username }}", {{ records|safe }}, "recordsTableWrapper");
     appendPlayerCards({{ top_players|safe }}, "topPlayersWrapper");
-    createHeadToHeadCard("vxyou", {{ h2h|safe }});
+    createHeadToHeadCard(0);
 
     function appendObjectsToDiv(objects, divId) {
         if (!objects || objects.length === 0) return;
@@ -562,170 +583,249 @@
         });
     }
 
-function populateTableFromRecords(dataRecords, tableId) {
-    // Get the HTML table by ID
-    const table = document.getElementById(tableId);
+    function populateTableFromRecords(dataRecords, tableId) {
+        // Get the HTML table by ID
+        const table = document.getElementById(tableId);
 
-    // Clear the table contents
-    table.innerHTML = '';
+        // Clear the table contents
+        table.innerHTML = '';
 
-    // Ensure there are records to process
-    if (dataRecords.length === 0) {
-        console.warn('No data records provided.');
-        return;
-    }
+        // Ensure there are records to process
+        if (dataRecords.length === 0) {
+            console.warn('No data records provided.');
+            return;
+        }
 
-    // Get column names from the keys of the first record
-    const columns = Object.keys(dataRecords[0]);
+        // Get column names from the keys of the first record
+        const columns = Object.keys(dataRecords[0]);
 
-    // Create the table header
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    columns.forEach(column => {
-        const th = document.createElement('th');
-        th.textContent = column; // Use the column name as header text
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create the table body
-    const tbody = document.createElement('tbody');
-
-    dataRecords.forEach(record => {
-        const row = document.createElement('tr');
+        // Create the table header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
 
         columns.forEach(column => {
-            const td = document.createElement('td');
-            td.textContent = record[column]; // Get the cell value from the record
-            row.appendChild(td);
+            const th = document.createElement('th');
+            th.textContent = column; // Use the column name as header text
+            headerRow.appendChild(th);
         });
 
-        tbody.appendChild(row);
-    });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
 
-    table.appendChild(tbody);
-}
+        // Create the table body
+        const tbody = document.createElement('tbody');
 
-function appendPlayerCards(players, divId) {
-    // Get the target div
-    const container = document.getElementById(divId);
+        dataRecords.forEach(record => {
+            const row = document.createElement('tr');
 
-    if (!container || players.length === 0) return; // Exit if no container or empty list
+            columns.forEach(column => {
+                const td = document.createElement('td');
+                td.textContent = record[column]; // Get the cell value from the record
+                row.appendChild(td);
+            });
 
-    container.innerHTML = '';
+            tbody.appendChild(row);
+        });
 
-    players.forEach(player => {
-        // Create text of all leagues
-        let leaguesHTML = '';
-        for (let league in player.leagues) {
-            let text = '<div>' + league + ' - ' +  player.leagues[league] + '</div>';
-            leaguesHTML += text;
-        };
+        table.appendChild(tbody);
+    }
 
-        // Create the card HTML using template literals
-        const cardHTML = `
-            <div class="col-auto">
-                <div class="card" style="width: 18rem;">
-                    <div class="flexRow fugaz">
-                        <h5 class="cardHeaderLeft card-title">
-                            <div>${player.first_name}</div>
-                            <div>${player.last_name}</div>
-                        </h5>
-                        <div class="cardHeaderRight card-title">
-                            <div>${player.team}</div>
-                            <div>${player.position}</div>
-                        </div>
-                    </div>
-                    <div class="card-body jersey-15">
-                        <div class="flexRow">
-                            <div class="statBox royal-blue">
-                                <div class="statNumber">${player.total_points.toFixed(1)}</div>
-                                <div class="statLabel">Total Points</div>
+    function populateRecords(username, dataRecords, divId) {
+        // Get the HTML table by ID
+        const container = document.getElementById(divId);
+
+        // Ensure there are records to process
+        if (dataRecords.length === 0) {
+            console.warn('No data records provided.');
+            return;
+        }
+
+        dataRecords.forEach(record => {
+            const btnHTML = `
+                <button class="btn btn-primary record-btn"
+                onclick="createHeadToHeadCard('${record.user_id}');">
+                    ${record.username}
+                    <span class="badge rounded-pill text-bg-dark">${record.W} - ${record.L}</span>
+                </button>`;
+
+            container.insertAdjacentHTML('beforeend', btnHTML);
+        });
+    }
+
+    function appendPlayerCards(players, divId) {
+        // Get the target div
+        const container = document.getElementById(divId);
+
+        if (!container || players.length === 0) return; // Exit if no container or empty list
+
+        container.innerHTML = '';
+
+        players.forEach(player => {
+            // Create text of all leagues
+            let leaguesHTML = '';
+            for (let league in player.leagues) {
+                let text = '<div>' + league + ' - ' +  player.leagues[league] + '</div>';
+                leaguesHTML += text;
+            };
+
+            // Create the card HTML using template literals
+            const cardHTML = `
+                <div class="col-auto">
+                    <div class="card" style="width: 18rem;">
+                        <div class="flexRow fugaz">
+                            <h5 class="cardHeaderLeft card-title">
+                                <div>${player.first_name}</div>
+                                <div>${player.last_name}</div>
+                            </h5>
+                            <div class="cardHeaderRight card-title">
+                                <div>${player.team}</div>
+                                <div>${player.position}</div>
                             </div>
-                            <div class="statBox royal-blue">
-                                <div class="statNumber">${player.ppg.toFixed(2)}</div>
-                                <div class="statLabel">Points per game</div>
-                            </div>
                         </div>
-                        <div class="flexRow">
-                            <div class="statBox royal-blue">
-                                <div class="statNumber">${player.high_score.toFixed(1)}</div>
-                                <div class="statLabel">High Score</div>
-                            </div>
-                            <div class="statBox royal-blue">
-                                <div class="statNumber">${player.games}</div>
-                                <div class="statLabel">Games played</div>
-                            </div>
-                        </div>
-                        <div class="leagueNamesWrapper">
-                            ${leaguesHTML}
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-
-        // Append the generated HTML to the container
-        container.insertAdjacentHTML('beforeend', cardHTML);
-    });
-}
-
-function createHeadToHeadCard(username, data) {
-    // Get the target div
-    const container = document.getElementById('hh-wrapper');
-
-    if (!container || data.length === 0) return; // Exit if no container or empty list
-
-    const hh_data = data.filter(item => item.opponentName === 'vxyou');
-    container.innerHTML = '';
-
-    let cardHTML = `
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="hh-title">
-                            <div class="user-wrapper-left">
-                                <div class="hh-username">
-                                    <img class="avatar" src={% static 'avatar_sample.png' %}>
-                                    silv3rback
+                        <div class="card-body jersey-15">
+                            <div class="flexRow">
+                                <div class="statBox royal-blue">
+                                    <div class="statNumber">${player.total_points.toFixed(1)}</div>
+                                    <div class="statLabel">Total Points</div>
+                                </div>
+                                <div class="statBox royal-blue">
+                                    <div class="statNumber">${player.ppg.toFixed(2)}</div>
+                                    <div class="statLabel">Points per game</div>
                                 </div>
                             </div>
-                            <div class="hh-record">10 - 12</div>
-                            <div class="user-wrapper-right">
-                                <div class="hh-username">
-                                    <img class="avatar" src={% static 'avatar_sample2.png' %}>
-                                    vxyou
+                            <div class="flexRow">
+                                <div class="statBox royal-blue">
+                                    <div class="statNumber">${player.high_score.toFixed(1)}</div>
+                                    <div class="statLabel">High Score</div>
+                                </div>
+                                <div class="statBox royal-blue">
+                                    <div class="statNumber">${player.games}</div>
+                                    <div class="statLabel">Games played</div>
                                 </div>
                             </div>
-                        </div>`;
+                            <div class="leagueNamesWrapper">
+                                ${leaguesHTML}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
 
-    hh_data.forEach(week => {
-        // Create the card HTML using template literals
+            // Append the generated HTML to the container
+            container.insertAdjacentHTML('beforeend', cardHTML);
+        });
+    }
+
+    function createHeadToHeadCard(opponent_id) {
+        const username = "{{ username }}";
+        const data = {{ h2h|safe }};
+
+        // Get the target div
+        const container = document.getElementById('hh-wrapper');
+
+        if (!container || data.length === 0) return; // Exit if no container or empty list
+
+        // Filter for opponent records
+        let hh_data;
+        if(opponent_id === 0){
+            const firstOpponentID = data[0].opponentID;
+            hh_data = data.filter(item => item.opponentID === firstOpponentID);
+            opponent_username = hh_data[0].opponentName;
+            // Get opponent avatar
+            fetchAvatar(firstOpponentID);
+        }
+        else {
+            hh_data = data.filter(item => item.opponentID === opponent_id);
+            opponent_username = hh_data[0].opponentName;
+            // Get opponent avatar
+            fetchAvatar(opponent_id);
+        }
+
+        container.innerHTML = '';
+
+
+
+        let wins = 0;
+        let losses = 0;
+
+        hh_data.forEach(match => {
+            if (match.PF > match.PA) {
+                wins++;
+            } else if (match.PF < match.PA) {
+                losses++;
+            }
+        });
+
         let userColorClass = '';
         let oppColorClass = '';
-        if(week.PF > week.PA){
+        if(wins > losses){
             oppColorClass = 'text-secondary';
         }
         else {
             userColorClass = 'text-secondary';
         }
-        let weekHTML = `<div class="flexRow score-card">
-                            <div class="score-card-league">${week.league}</div>
-                            <div class="flexRow score-values ${userColorClass}">
-                                <div class="colHalf">silv3rback</div><div class="colHalf text-right">${week.PF}</div>
-                            </div>
-                            <div class="flexRow score-values ${oppColorClass}">
-                                <div class="colHalf">${week.opponentName}</div><div class="colHalf text-right">${week.PA}</div>
-                            </div>
-                            <div class="score-card-league">Week ${week.week} | ${week.year}</div>
-                        </div>`;
 
-        cardHTML += weekHTML;
-    });
+        let cardHTML = `
+                        <div class="card hh-card">
+                        <div class="card-body hh-body">
+                            <div class="hh-title">
+                                <div class="user-wrapper-left">
+                                    <div class="hh-username">
+                                        <img class="avatar" src="{{ avatar_url }}">
+                                        ${username}
+                                    </div>
+                                </div>
+                                <div class="hh-record">
+                                    <div class="${userColorClass}">${wins} </div>
+                                    <div class="text-secondary"> - </div>
+                                    <div class="${oppColorClass}"> ${losses}</div>
+                                </div>
+                                <div class="user-wrapper-right">
+                                    <div class="hh-username">
+                                        <img id="opp-avatar-img" class="avatar" src="">
+                                        ${opponent_username}
+                                    </div>
+                                </div>
+                            </div>`;
 
-    cardHTML += '</div></div></div>';
-    // Append the generated HTML to the container
-    container.insertAdjacentHTML('beforeend', cardHTML);
-}
+        hh_data.forEach(week => {
+            // Create the card HTML using template literals
+            let userColorClass = '';
+            let oppColorClass = '';
+            if(week.PF > week.PA){
+                oppColorClass = 'text-secondary';
+            }
+            else {
+                userColorClass = 'text-secondary';
+            }
+            let weekHTML = `<div class="flexRow score-card">
+                                <div class="score-card-league">${week.league}</div>
+                                <div class="flexRow score-values ${userColorClass}">
+                                    <div class="colHalf">${username}</div><div class="colHalf text-right">${week.PF}</div>
+                                </div>
+                                <div class="flexRow score-values ${oppColorClass}">
+                                    <div class="colHalf">${week.opponentName}</div><div class="colHalf text-right">${week.PA}</div>
+                                </div>
+                                <div class="score-card-league">Week ${week.week} | ${week.year}</div>
+                            </div>`;
+
+            cardHTML += weekHTML;
+        });
+
+        cardHTML += '</div></div></div>';
+        // Append the generated HTML to the container
+        container.insertAdjacentHTML('beforeend', cardHTML);
+    }
+
+    function fetchAvatar(username) {
+        fetch(`/get_avatar/${username}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.avatar_url) {
+                    document.getElementById("opp-avatar-img").src = data.avatar_url;
+                } else {
+                    console.error("Avatar URL not found");
+                }
+            })
+            .catch(error => console.error("Error fetching avatar:", error));
+    }
 </script>
