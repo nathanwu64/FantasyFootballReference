@@ -7,17 +7,23 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="homeBanner">
-        <h6 id="homeText">dynastyNuts</h6>
-    </div>
-
     <div id="homeBody">
+        <h1 id="homeTitle" class="royal-blue">Welcome to FF Reference</h1>
         <h3 class="tagline">
           Your fantasy football history
           <small class="text-body-secondary">in one place.</small>
         </h3>
 
-        <figure>
+        <div class="inputDiv">
+            <input class="form-control" id="sleeperUsername" placeholder="Sleeper Username">
+            <button type="button" id="findLeaguesButton" class="btn btn-lg">
+                Find Leagues
+                <span id="findLeaguesSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+
+        </div>
+
+        <figure id="homeQuote">
           <blockquote class="blockquote">
             <p>"Fantasy football is about proving you are better than your friends."</p>
           </blockquote>
@@ -26,48 +32,100 @@
           </figcaption>
         </figure>
 
-        <div class="inputDiv">
-            <input class="form-control" id="sleeperUsername" placeholder="Sleeper Username">
-            <button type="button" id="findLeaguesButton" class="btn btn-success">Find Leagues</button>
-        </div>
-
         <div id="userLeaguesTableWrapper"></div>
     </div>
 </body>
+
+<!-- Modal -->
+<div class="modal fade" id="leagueModal" tabindex="-1" aria-labelledby="leagueModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leagueModalLabel">Select Leagues</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="leagueModalBody">
+        <!-- League checkboxes will be populated here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 </html>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Parisienne&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Jersey+15&display=swap');
+
+    .fugaz {
+      font-family: "Fugaz One", serif;
+      font-weight: 400;
+      font-style: normal;
+    }
+    .parisienne {
+      font-family: "Parisienne", serif;
+      font-weight: 600;
+      font-style: italic;
+    }
+    .bebas-neue {
+      font-family: "Bebas Neue", serif;
+      font-weight: 400;
+      font-style: normal;
+    }
+    .jersey-15 {
+      font-family: "Jersey 15", serif;
+      font-weight: 400;
+      font-style: normal;
+    }
+
     body {
+        height: 100vh;
         margin: 0;
+        font-family: "Bebas Neue", serif;
+        color: #4A4A4A;
+        background: #FFFFE3;
+        line-height: normal;
     }
-    .homeBanner {
-        width: 100%;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        border-bottom: thin solid silver;
-        margin-bottom: 10vh;
+    .charcoal-gray {
+        color: #4A4A4A;
     }
-    #homeText {
-        margin: auto;
-        min-width: 80%;
-        margin-bottom: 0;
+    .royal-blue {
+        color: #1C39BB;
     }
+
     #homeBody {
         margin: auto;
+        padding-top: 20vh;
         max-width: 700px;
     }
     .tagline {
         display: flex;
         flex-direction: column;
+        margin-bottom: 30px;
+    }
+    #homeQuote {
+        font-family: 'Jersey 15', serif;
+        margin-top: 50px;
     }
     .inputDiv {
         display: flex;
         flex-direction: row;
     }
+    #findLeaguesButton {
+        background: #1C39BB;
+        color: white;
+    }
+    #findLeaguesSpinner {
+        display: none;
+    }
     #sleeperUsername {
         width: 500px;
         margin-right: 20px;
+        font-family: sans-serif;
     }
     #userLeaguesTableWrapper {
         margin-top: 20px;
@@ -75,12 +133,22 @@
     .generalTable {
         width: auto;
     }
+
+    #leagueModalBody {
+        max-height: 70vh;
+        overflow: scroll;
+        font-family: sans-serif;
+    }
 </style>
 
 <script>
     document.getElementById('findLeaguesButton').addEventListener('click', async function() {
         // Get the value of the input field
         const username = document.getElementById('sleeperUsername').value;
+
+        // Show spinner
+        const spinner = document.getElementById('findLeaguesSpinner');
+        spinner.style.display = 'inline-block';
 
         try {
             // Send the username to the Django back-end
@@ -99,38 +167,65 @@
                 // Check if the response contains leagues
                 if (data.success && data.leagues) {
                     // Generate the HTML table
-                    const tableHtml = generateTable(data.leagues);
-                    document.getElementById('userLeaguesTableWrapper').innerHTML = tableHtml;
+                    populateLeagueModal(data.leagues);
+                    const leagueModal = new bootstrap.Modal(document.getElementById('leagueModal'));
+                    leagueModal.show();
                 } else {
-                    document.getElementById('userLeaguesTableWrapper').innerHTML = '<p>No leagues found.</p>';
+                    alert('No leagues found.');
                 }
             } else {
                 console.error('Failed to fetch leagues:', response.statusText);
+                alert('No leagues found.');
             }
         } catch (error) {
             console.error('Error:', error);
+            alert('No leagues found.');
         }
+        spinner.style.display = 'none';
     });
 
-    // Helper function to generate an HTML table from a dictionary
-    function generateTable(leagues) {
-        let html = '<h5>Select a league:</h5><div class="row row-cols-1 row-cols-md-2 g-4">';
+    function populateLeagueModal(leagues) {
+        const modalBody = document.getElementById('leagueModalBody');
+        modalBody.innerHTML = ''; // Clear previous content
 
-        for (const [leagueId, leagueName] of Object.entries(leagues)) {
-            html += `
-                <div class="col">
-                    <div class="card text-bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">${leagueName}</h5>
-                            <button class="btn btn-sm btn-outline-dark">Get Started</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+        // Create the "Select/Deselect All" toggle button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.classList.add('btn', 'btn-sm', 'btn-outline-primary', 'mb-3');
+        toggleBtn.textContent = 'Deselect All';
+        toggleBtn.setAttribute('type', 'button');
 
-        html += '</div>';
-        return html;
+        // State to track whether everything is selected
+        let allSelected = true;
+
+        toggleBtn.addEventListener('click', () => {
+            allSelected = !allSelected;
+            const checkboxes = modalBody.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = allSelected);
+            toggleBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
+        });
+
+        modalBody.appendChild(toggleBtn);
+
+        leagues.forEach(league => {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('form-check', 'd-flex', 'align-items-center', 'mb-2', 'gap-2');
+
+            const checkbox = document.createElement('input');
+            checkbox.classList.add('form-check-input', 'm-0');
+
+            checkbox.type = 'checkbox';
+            checkbox.id = league.league_id;
+            checkbox.checked = true;
+
+            const label = document.createElement('label');
+            label.classList.add('form-check-label');
+            label.setAttribute('for', league.league_id);
+            label.textContent = `${league.name} (${league.year})`;
+
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(label);
+            modalBody.appendChild(wrapper);
+        });
     }
 
     // Helper function to get the CSRF token

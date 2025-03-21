@@ -26,7 +26,6 @@ def get_user_leagues(username, start_year=2017, end_year=2024):
                 'league_id': league_id,
                 'year': year
             })
-
     return league_list
 
 def get_league_data(league_id):

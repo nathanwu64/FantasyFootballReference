@@ -14,7 +14,6 @@ def find_leagues(request):
         username = data.get('username')
 
         league_dict = sleeper_api.get_user_leagues(username)
-        print(league_dict)
         return JsonResponse({'success': True, 'leagues': league_dict})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
