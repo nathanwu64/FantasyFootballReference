@@ -17,8 +17,9 @@ def merge_dicts(dict_list):
 
 
 class Manager:
-    def __init__(self, username):
+    def __init__(self, username, leagues=None):
         self.username = username
+        self.leagues = leagues
         self.user_info = self.get_user_info()
         self.user_id = self.user_info['user_id']
         self.avatar_url = f"https://sleepercdn.com/avatars/thumbs/{self.user_info['avatar']}"
@@ -37,8 +38,6 @@ class Manager:
     def get_user_league_ids(self):
         return sleeper_api.get_user_leagues(self.user_id)
 
-
-
     def process_league(self, l):
         """
         Function to process a single league.
@@ -53,7 +52,10 @@ class Manager:
         """
         Method to fetch league data using multiprocessing.
         """
-        league_ids = self.get_user_league_ids()
+        if self.leagues:
+            league_ids = self.leagues
+        else:
+            league_ids = self.get_user_league_ids()
         self.league_objects = []
         self.total_leagues = len(league_ids)
         from concurrent.futures import ProcessPoolExecutor

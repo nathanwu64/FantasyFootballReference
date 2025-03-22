@@ -23,6 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
     path('find_leagues/', find_leagues, name='find_leagues'),
-    path('manager/<str:username>/', manager_page, name='manager'),
+    path('manager/', manager_page, name='manager'),
     path('get_avatar/<str:username>/', get_avatar, name='get_avatar')
 ]
